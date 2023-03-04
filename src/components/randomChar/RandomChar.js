@@ -11,13 +11,7 @@ class RandomChar extends Component {
 
 
     state = {
-        char: {
-            name: null,
-            description: null,
-            thumbnail: null,
-            homepage: null,
-            wiki: null
-        }, 
+        char: {}, 
         loading: true,
         error: false,
     }
@@ -29,7 +23,6 @@ class RandomChar extends Component {
     }
 
     componentWillUnmount() {
-        // 
     }
 
     onCharLoaded = (char) => {

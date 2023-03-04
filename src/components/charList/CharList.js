@@ -21,6 +21,7 @@ class CharList extends Component {
             .getAllCharacters()
             .then(this.onCharListLoaded)
             .catch(this.onError)
+
     }
 
 
@@ -38,7 +39,8 @@ class CharList extends Component {
         })
     }
 
-    renderItems(arr) {    
+    renderItems(arr) {  
+        
         const items = arr.map((item) => {
             
             const {id, name, thumbnail} = item
@@ -47,7 +49,9 @@ class CharList extends Component {
 
             return (
                 <li className="char__item"
-                    key={id}>
+                    key={id}
+                    onClick={() => this.props.onCharSelected(id)}
+                    >
                     <img src={thumbnail} style={stylesThumbnail} alt={name}/>
                     <div className="char__name">{name}</div>
                 </li>
