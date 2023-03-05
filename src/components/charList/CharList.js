@@ -11,25 +11,76 @@ class CharList extends Component {
     state = {
         charList: [],
         loading: true,
-        error: false
+        error: false,
+        newItemLoading: false,
+        offset: 210, 
+        charEnded: false,
+        pageEnded: false,
     }
 
     marvelService = new MarvelServices();
 
     componentDidMount() {
-         this.marvelService
-            .getAllCharacters()
-            .then(this.onCharListLoaded)
-            .catch(this.onError)
-
+        console.log('mount');
+         this.onRequest()
+         window.addEventListener("scroll", this.onPageEnded);
+         window.addEventListener("scroll", this.onRequestByScroll);
     }
 
 
-    onCharListLoaded = (charList) => {
+
+    componentWillUnmount() {
+        console.log('unmount');
+         window.removeEventListener("scroll", this.onPageEnded);
+         window.removeEventListener("scroll", this.onRequestByScroll);
+    }
+
+    onPageEnded = () => {
+         if (
+            window.pageYOffset + document.documentElement.clientHeight >=
+            document.documentElement.scrollHeight -1
+        ) {
+            this.setState({
+                pageEnded: true
+            })
+        }
+    }
+
+    onRequestByScroll = () => {
+        const {pageEnded, charEnded, newItemLoading} = this.state;
+        
+        if (pageEnded && !newItemLoading && !charEnded) {
+            this.onRequest(this.state.offset)
+        }
+        
+    }
+
+    onRequest = (offset) => {
+        this.onCharListLoading();
+        
+        this.marvelService
+            .getAllCharacters(offset)
+            .then(this.onCharListLoaded)
+            .catch(this.onError)
+    }
+
+    onCharListLoading = () => {
         this.setState({
-            charList,
-            loading: false,
+            newItemLoading: true
         })
+    }
+
+
+    onCharListLoaded = (newCharList) => {
+
+        this.setState(({offset, charList}) => ({
+            charList: [...charList, ...newCharList],
+            loading: false,
+            newItemLoading: false,
+            offset: offset + 9,
+            charEnded: newCharList.length < 9, 
+            pageEnded: false
+        }))
     }
 
     onError = () => {
@@ -67,7 +118,7 @@ class CharList extends Component {
     }
 
    render() {
-    const {charList, loading, error} = this.state;
+    const {charList, loading, error, offset, newItemLoading, charEnded} = this.state;
     const items = this.renderItems(charList);
 
     const errorMessage = error ? <ErrorMessage/> : null;
@@ -79,7 +130,11 @@ class CharList extends Component {
             {errorMessage}
             {spinner}
             {content}
-            <button className="button button__main button__long">
+            <button 
+                className="button button__main button__long"
+                disabled={newItemLoading}
+                style={{'display': charEnded ? 'none' : 'block'}}
+                onClick={() => this.onRequest(offset)}>
                 <div className="inner">load more</div>
             </button>
         </div>

@@ -17,7 +17,7 @@ class CharInfo extends Component {
 
     marvelService = new MarvelServices();
 
-    componentDidMound() {
+    componentDidMount() {
         this.updateChar();
     }
 
@@ -50,6 +50,7 @@ class CharInfo extends Component {
     }
 
     updateChar = () => {
+        console.log(this.props);
         const {charId} = this.props;
 
         if (!charId) {
