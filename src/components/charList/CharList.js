@@ -1,4 +1,7 @@
 import {Component} from 'react';
+
+import PropTypes from 'prop-types';
+
 import Spinner from '../spinner/Spinner';
 import MarvelServices from '../../services/MarvelServices';
 import ErrorMessage from '../errorMessage/ErrorMessage';
@@ -21,7 +24,6 @@ class CharList extends Component {
     marvelService = new MarvelServices();
 
     componentDidMount() {
-        console.log('mount');
          this.onRequest()
          window.addEventListener("scroll", this.onPageEnded);
          window.addEventListener("scroll", this.onRequestByScroll);
@@ -30,13 +32,12 @@ class CharList extends Component {
 
 
     componentWillUnmount() {
-        console.log('unmount');
          window.removeEventListener("scroll", this.onPageEnded);
          window.removeEventListener("scroll", this.onRequestByScroll);
     }
 
     onPageEnded = () => {
-         if (
+        if (
             window.pageYOffset + document.documentElement.clientHeight >=
             document.documentElement.scrollHeight -1
         ) {
@@ -90,9 +91,21 @@ class CharList extends Component {
         })
     }
 
+    itemRefs = [];
+
+    setRef = (ref) => {
+        this.itemRefs.push(ref);
+    }
+
+    onFosusOnItem = (i) => {
+        this.itemRefs.forEach(item => item.classList.remove('char__item_selected'));
+        this.itemRefs[i].classList.add('char__item_selected');
+        this.itemRefs[i].focus();
+    }
+
     renderItems(arr) {  
         
-        const items = arr.map((item) => {
+        const items = arr.map((item, i) => {
             
             const {id, name, thumbnail} = item
 
@@ -100,8 +113,19 @@ class CharList extends Component {
 
             return (
                 <li className="char__item"
+                    tabIndex={0}
+                    ref={this.setRef}
                     key={id}
-                    onClick={() => this.props.onCharSelected(id)}
+                    onClick={() => {
+                        this.props.onCharSelected(id)
+                        this.onFosusOnItem(i)
+                    }}
+                    onKeyPress={(e) => {
+                        if(e.key === ' ' || e.key === "Enter") {
+                            this.props.onCharSelected(id)
+                            this.onFosusOnItem(i)
+                        }
+                    }}
                     >
                     <img src={thumbnail} style={stylesThumbnail} alt={name}/>
                     <div className="char__name">{name}</div>
@@ -130,16 +154,20 @@ class CharList extends Component {
             {errorMessage}
             {spinner}
             {content}
-            <button 
+            {/* <button 
                 className="button button__main button__long"
                 disabled={newItemLoading}
                 style={{'display': charEnded ? 'none' : 'block'}}
                 onClick={() => this.onRequest(offset)}>
                 <div className="inner">load more</div>
-            </button>
+            </button> */}
         </div>
     )
    }
+}
+
+CharList.propTypes = {
+    onCharSelected: PropTypes.func.isRequired
 }
 
 export default CharList;

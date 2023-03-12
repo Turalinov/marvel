@@ -9,7 +9,7 @@ import decoration from '../../resources/img/vision.png';
 
 class App extends Component{
    state = {
-        selectedChar: 1010338
+        selectedChar: null
     }
 
     onCharSelected = (id) => {
@@ -28,7 +28,7 @@ class App extends Component{
                    </ErrorBoundary>
                     <div className="char__content">
                         <ErrorBoundary>
-                            <CharList onCharSelected={this.onCharSelected} />
+                            <CharList onCharSelected={this.onCharSelected}/>
                         </ErrorBoundary>
                     
                         <ErrorBoundary>
