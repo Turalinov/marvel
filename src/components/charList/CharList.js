@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback, useRef} from 'react';
+import {useState, useEffect, useRef, useCallback} from 'react';
 
 import PropTypes from 'prop-types';
 
@@ -7,76 +7,70 @@ import MarvelServices from '../../services/MarvelServices';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import './charList.scss';
 
+let count = 1;
+
 const CharList = (props) => {
+
 
     const [charList, setCharList] = useState([]); //used
     const [loading, setLoading] = useState(true); //used
     const [error, setError] = useState(false);  
-    const [newItemLoading, setNewItemLoading] = useState(false); //used
+    const [newItemLoading, setNewItemLoading] = useState(true); //used
     const [offset, setOffset] = useState(210); //used
     const [charEnded, setCharEnded] = useState(false); //used
-    // const [pageEnded, setPageEnded] = useState(false); //used
 
-    // const pageEndedRef = useRef();
-    // pageEndedRef.current = pageEnded;
-
-    // const offsetRef = useRef();
-    // console.log(offset);
-    // offsetRef.current = offset;
-
-    // const newItemLoadingRef = useRef();
-    // newItemLoadingRef.current = newItemLoading;
-    
-    // const charEndedRef = useRef();
-    // charEndedRef.current = charEnded;
+    const newItemLoadingRef = useRef();
+    newItemLoadingRef.current = newItemLoading;
 
     const marvelService = new MarvelServices();
 
+    
+    
     useEffect(() => {
-        onRequest();
 
-        // window.addEventListener("scroll", onPageEnded);
-        // window.addEventListener("scroll", onRequestByScroll);
+        window.addEventListener('scroll', onScroll);
 
-        // return function () {
-        //     window.removeEventListener("scroll", onPageEnded);
-        //     window.removeEventListener("scroll", onRequestByScroll);
-        // }
-
+        return () => window.removeEventListener('scroll', onScroll);
     }, []);
-    
-   
 
-    // const onPageEnded = useCallback(() => {
-    //     if (
-    //         window.pageYOffset + document.documentElement.clientHeight >=
-    //         document.documentElement.scrollHeight -1
-    //     ) {
-    //         if (!pageEndedRef.current) {
-    //             setPageEnded(true);
-    //         }
-    //     }
-    // }, [])
+    useEffect(() => {
+        if (newItemLoading) {
+            onRequest(offset);
+        }
+
+    }, [newItemLoading])
+
+
+
+
+    const onScroll = useCallback(() => {        
+        console.log('scroll');
+        if (
+            window.pageYOffset + document.documentElement.clientHeight >=
+            document.documentElement.scrollHeight -1
+        ) { 
+            
+            if (!newItemLoadingRef.current) {
+                setNewItemLoading(true);
+            }
+        }
+    }, [])
+    
     
     
 
-    // const onRequestByScroll = useCallback(() => {
-        
-    //     if (pageEndedRef.current && !newItemLoadingRef.current && !charEndedRef.current) { 
-        
-    //         //если мы дошли до конца и в данный момент не загружается новый список и
-    //         console.log(offsetRef.current);
-    //         onRequest(offsetRef.current)
-    //     }   
-    // }, [])
 
     const onRequest = (offset) => {
+        console.log(`request ${count++}`)
         onCharListLoading();
         
         marvelService
             .getAllCharacters(offset)
             .then(onCharListLoaded)
             .catch(onError)
+            .finally(() => {
+                setNewItemLoading(false);
+            })
     }
 
     const onCharListLoading = () => {
@@ -93,10 +87,8 @@ const CharList = (props) => {
 
         setCharList(charList => [...charList, ...newCharList]);
         setLoading(false);
-        setNewItemLoading(false);
         setOffset(offset => offset + 9);
         setCharEnded(ended);
-        // setPageEnded(false);
 
     }
 

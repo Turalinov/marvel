@@ -81,7 +81,11 @@ const RandomChar = () => {
 const View = ({char}) => {
     const {name, description, thumbnail, homepage, wiki} = char;
 
-    const stylesThumbnail = thumbnail.includes('image_not_available.jpg') ? {'objectFit': 'contain'} : {}
+    let stylesThumbnail = {};
+
+    if (thumbnail) {
+         stylesThumbnail = thumbnail.includes('image_not_available.jpg') ? {'objectFit': 'contain'} : {}
+    }
 
     return ( 
         <div className="randomchar__block">
