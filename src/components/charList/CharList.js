@@ -3,7 +3,7 @@ import {useState, useEffect, useRef, useCallback} from 'react';
 import PropTypes from 'prop-types';
 
 import Spinner from '../spinner/Spinner';
-import MarvelServices from '../../services/MarvelServices';
+import useMarvelServices from '../../services/MarvelServices';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import './charList.scss';
 
@@ -13,69 +13,65 @@ const CharList = (props) => {
 
 
     const [charList, setCharList] = useState([]); //used
-    const [loading, setLoading] = useState(true); //used
-    const [error, setError] = useState(false);  
-    const [newItemLoading, setNewItemLoading] = useState(true); //used
+    const [newItemLoading, setNewItemLoading] = useState(false); //used
     const [offset, setOffset] = useState(210); //used
     const [charEnded, setCharEnded] = useState(false); //used
 
-    const newItemLoadingRef = useRef();
-    newItemLoadingRef.current = newItemLoading;
+    // const newItemLoadingRef = useRef();
+    // newItemLoadingRef.current = newItemLoading;
 
-    const marvelService = new MarvelServices();
+    const {loading, error, getAllCharacters} = useMarvelServices();
 
     
-    
     useEffect(() => {
-
-        window.addEventListener('scroll', onScroll);
-
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-
-    useEffect(() => {
-        if (newItemLoading) {
-            onRequest(offset);
-        }
-
-    }, [newItemLoading])
-
-
-
-
-    const onScroll = useCallback(() => {        
-        console.log('scroll');
-        if (
-            window.pageYOffset + document.documentElement.clientHeight >=
-            document.documentElement.scrollHeight -1
-        ) { 
-            
-            if (!newItemLoadingRef.current) {
-                setNewItemLoading(true);
-            }
-        }
+        onRequest(offset, true);
     }, [])
     
     
+    // useEffect(() => {
+
+    //     window.addEventListener('scroll', onScroll);
+
+    //     return () => window.removeEventListener('scroll', onScroll);
+    // }, []);
+
+    // useEffect(() => {
+    //     if (newItemLoading && !charEnded) {
+    //         onRequest(offset);
+    //     }
+
+    // }, [newItemLoading])
+
+
+
+
+    // const onScroll = useCallback(() => {        
+    //     console.log('scroll');
+    //     if (
+    //         window.pageYOffset + document.documentElement.clientHeight >=
+    //         document.documentElement.scrollHeight -1
+    //     ) { 
+            
+    //         if (!newItemLoadingRef.current) {
+    //             setNewItemLoading(true);
+    //         }
+    //     }
+    // }, [])
+    
+    
     
 
 
-    const onRequest = (offset) => {
+    const onRequest = (offset, initial) => {
         console.log(`request ${count++}`)
-        onCharListLoading();
         
-        marvelService
-            .getAllCharacters(offset)
+        initial ? setNewItemLoading(false) : setNewItemLoading(true);
+        
+        getAllCharacters(offset)
             .then(onCharListLoaded)
-            .catch(onError)
-            .finally(() => {
-                setNewItemLoading(false);
-            })
     }
 
-    const onCharListLoading = () => {
-        setNewItemLoading(true);
-    }
+
 
 
     const onCharListLoaded = (newCharList) => {
@@ -86,16 +82,12 @@ const CharList = (props) => {
         }
 
         setCharList(charList => [...charList, ...newCharList]);
-        setLoading(false);
+        setNewItemLoading(false)
         setOffset(offset => offset + 9);
         setCharEnded(ended);
 
     }
 
-    const onError = () => {
-        setError(true);
-        setLoading(false);
-    }
 
     const itemRefs = useRef([]);
 
@@ -154,14 +146,13 @@ const CharList = (props) => {
     const items = renderItems(charList);
 
     const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error) ? items : null;
+    const spinner = loading && !newItemLoading ? <Spinner/> : null;
 
     return (
         <div className="char__list">
             {errorMessage}
             {spinner}
-            {content}
+            {items}
             <button 
                 className="button button__main button__long"
                 disabled={newItemLoading}
